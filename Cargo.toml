@@ -1,0 +1,9 @@
+[package]
+name = "luoCard"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+nfc1 = "0.5.2"
+redb = "2.1.2"
+tempfile = "3.12.0"
