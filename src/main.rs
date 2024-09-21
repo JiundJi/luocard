@@ -4,6 +4,7 @@ use std::thread::sleep;
 use std::time::Duration;
 
 use nfc1::*;
+use target_info::{Iso14443a, TargetInfo};
 
 const MAX_FRAME_LEN: usize = 264;
 const UNLOCK_1: [u8; 1] = [0x40];
@@ -19,6 +20,7 @@ fn main() {
 
     println!("nfc reader: {} opened", device.name());
     device.initiator_init().expect("error while initiating");
+    sleep(Duration::from_secs(3));
 
     loop {
         println!("looking for targets...");
@@ -29,6 +31,13 @@ fn main() {
         }) {
             Ok(target) => {
                 println!("target found: {}", target.to_string(false).expect("error while getting target name"));
+                if let TargetInfo::Iso14443a(inf) = target.target_info {
+                    println!("{:?}", inf.uid);
+                    
+                } else {
+                    println!("not iso14443a")
+                }
+                println!("---");
             
                 match device.initiator_transceive_bits(&UNLOCK_1, 7, MAX_FRAME_LEN) {
                     Ok(rx) => {
@@ -37,7 +46,8 @@ fn main() {
                     Err(err) => {
                         println!("this card is not compatible. {:?}", err);
                         sleep(Duration::from_secs(5));
-                        println!("looking for targets");
+                        println!("meow");
+                        println!("---");
                         continue;
                     },
                 };
@@ -45,10 +55,13 @@ fn main() {
                 match device.initiator_transceive_bytes(&UNLOCK_2, MAX_FRAME_LEN, Timeout::Default) {
                     Ok(rx) => {
                         println!("received bytes: {:02X?}", rx);
-                        println!("this card is compatible");
                     },
                     Err(err) => {
                         println!("this card is not compatible. {:?}", err);
+                        sleep(Duration::from_secs(5));
+                        println!("AAAA");
+                        println!("---");
+                        continue;
                     }
                 }
             },
